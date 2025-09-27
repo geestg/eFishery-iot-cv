@@ -1,0 +1,6 @@
+train: D:/SEMESTER 5/TA 1/eFishery-iot-cv/efishery_yolov8/dataset/images/train
+val: D:/SEMESTER 5/TA 1/eFishery-iot-cv/efishery_yolov8/dataset/images/val
+
+nc: 1
+names: ['ikan_mas']
+    

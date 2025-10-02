@@ -1,27 +1,15 @@
-import os
+from pathlib import Path
 
-# Path ke folder labels (ganti sesuai struktur dataset kamu)
-base_label_dir = r"D:/SEMESTER 5/TA 1/eFishery-iot-cv/efishery_yolov8/dataset/labels"
+# ganti path ke folder labels anda
+labels_dir = Path(r"D:\SEMESTER 5\TA 1\eFishery-iot-cv\efishery_yolov8\dataset\labels")
 
-splits = ["train", "val"]
-
-for split in splits:
-    folder = os.path.join(base_label_dir, split)
-    if not os.path.exists(folder):
-        print(f"❌ Folder tidak ditemukan: {folder}")
-        continue
-
-    for file in os.listdir(folder):
-        if file.endswith(".txt"):
-            path = os.path.join(folder, file)
-            new_lines = []
-            with open(path, "r") as f:
-                for line in f.readlines():
-                    parts = line.strip().split()
-                    if len(parts) >= 5:
-                        parts[0] = "0"  # force semua class_id jadi 0
-                        new_lines.append(" ".join(parts) + "\n")
-            with open(path, "w") as f:
-                f.writelines(new_lines)
-
-    print(f"✅ Semua label di {folder} sudah diperbaiki ke class 0 (ikan_mas)")
+for txt_file in labels_dir.rglob("*.txt"):  # scan train dan val
+    lines = txt_file.read_text().strip().splitlines()
+    fixed_lines = []
+    for line in lines:
+        parts = line.split()
+        if parts:
+            parts[0] = "0"  # ganti semua class index ke 0
+            fixed_lines.append(" ".join(parts))
+    txt_file.write_text("\n".join(fixed_lines))
+    print(f"Fixed: {txt_file}")

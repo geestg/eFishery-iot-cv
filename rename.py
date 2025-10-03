@@ -1,7 +1,7 @@
 import os
 
 # Path folder gambar
-folder_path = r"D:\SEMESTER 5\TA 1\eFishery-iot-cv\efishery_yolov8\frames"
+folder_path = r"D:\SEMESTER 5\TA 1\eFishery-iot-cv\efishery_yolov8\dataset\images\train"
 
 # Ambil semua file gambar
 files = os.listdir(folder_path)

@@ -53,8 +53,8 @@ cv2.destroyAllWindows()
 
 print(f"✅ Video hasil tersimpan sebagai {output_file}")
 
-# === 5. Kirim video ke server temanmu ===
-server_url = "http://172.27.81.132:5000/upload"
+# === 5. Kirim video ke server kamu sendiri ===
+server_url = "http://127.0.0.1:5000/upload"  # ubah ke localhost server kamu
 
 try:
     with open(output_file, "rb") as f:

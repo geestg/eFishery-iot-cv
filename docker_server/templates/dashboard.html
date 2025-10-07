@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Analisis Ikan (YOLO)</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>🐟 Dashboard Analisis Ikan (YOLO)</h1>
+    <p>Menampilkan hasil deteksi ikan dari video endoscope.</p>
+
+    {% if results %}
+    <table>
+      <tr><th>Video</th><th>Jumlah Ikan</th><th>Panjang Rata-rata</th><th>Waktu</th></tr>
+      {% for r in results %}
+      <tr>
+        <td>{{ r.filename }}</td>
+        <td>{{ r.num_fish }}</td>
+        <td>{{ r.avg_length_cm }} cm</td>
+        <td>{{ r.timestamp }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <canvas id="chart" width="400" height="200"></canvas>
+    <script>
+      const labels = {{ results | map(attribute='filename') | list | safe }};
+      const data = {{ results | map(attribute='num_fish') | list | safe }};
+      new Chart(document.getElementById('chart'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Jumlah Ikan per Video',
+            data: data,
+            borderWidth: 1
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    </script>
+
+    {% else %}
+    <p><b>Belum ada hasil analisis video.</b></p>
+    {% endif %}
+  </div>
+</body>
+</html>

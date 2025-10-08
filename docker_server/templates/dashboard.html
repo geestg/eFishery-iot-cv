@@ -24,6 +24,20 @@
       {% endfor %}
     </table>
 
+    <h2>🎞️ Hasil Deteksi Video</h2>
+    {% for r in results %}
+      {% if r.video_path %}
+        <div class="video-block">
+          <h3>{{ r.filename }}</h3>
+          <video width="480" controls>
+            <source src="{{ r.video_path }}" type="video/mp4">
+            Browser tidak mendukung video.
+          </video>
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <h2>📊 Grafik Jumlah Ikan per Video</h2>
     <canvas id="chart" width="400" height="200"></canvas>
     <script>
       const labels = {{ results | map(attribute='filename') | list | safe }};
@@ -35,7 +49,8 @@
           datasets: [{
             label: 'Jumlah Ikan per Video',
             data: data,
-            borderWidth: 1
+            borderWidth: 1,
+            backgroundColor: '#4da6ff'
           }]
         },
         options: { scales: { y: { beginAtZero: true } } }

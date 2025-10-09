@@ -12,71 +12,63 @@ MODEL_PATH = r"D:\SEMESTER 5\TA 1\eFishery-iot-cv\train_ikan_mas_v1\weights\best
 model = YOLO(MODEL_PATH)
 
 # === 2. Pilih kamera endoscope ===
-camera_index = 0  # ubah jika kamera tidak terdeteksi
+camera_index = 0
 cap = cv2.VideoCapture(camera_index)
 if not cap.isOpened():
     print("❌ Kamera tidak dapat dibuka!")
     exit()
 
-# Set resolusi (sesuaikan dengan endoscope)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-
 print("✅ Kamera aktif. Tekan 'q' untuk berhenti.")
 
-# === 3. Siapkan penyimpanan hasil video ===
+# === 3. Siapkan penyimpanan video dengan nama rapi ===
 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-output_file = f"hasil_endoscope_{timestamp}.mp4"
+video_name = f"mas_{timestamp}.mp4"   # format baru
+output_file = video_name
+
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_file, fourcc, 20.0, (640, 480))
 
-# === 4. Inisialisasi SORT Tracker ===
+# === 4. Tracker (SORT) ===
 tracker = Sort(max_age=15, min_hits=3, iou_threshold=0.3)
-unique_ids = set()  # menyimpan ID ikan unik
+unique_ids = set()
+prev_time = 0
 
 # === 5. Jalankan deteksi YOLO + tracking ===
-prev_time = 0
 while True:
     ret, frame = cap.read()
     if not ret:
         print("⚠️ Tidak ada frame yang terbaca!")
         break
 
-    # Batasi FPS (10 FPS)
     current_time = time.time()
     if current_time - prev_time < 0.1:
         continue
     prev_time = current_time
 
-    # Jalankan YOLO
     results = model(frame, conf=0.5, device='cpu', verbose=False)
     detections = []
 
-    # Ambil bounding box dari YOLO [x1, y1, x2, y2, confidence]
     for box in results[0].boxes:
         x1, y1, x2, y2 = box.xyxy[0].tolist()
         conf = box.conf[0].item()
         detections.append([x1, y1, x2, y2, conf])
 
-    # Update tracker dengan deteksi baru
     if len(detections) > 0:
         tracked_objects = tracker.update(np.array(detections))
         for x1, y1, x2, y2, obj_id in tracked_objects:
             obj_id = int(obj_id)
             unique_ids.add(obj_id)
-
-            # Gambar bounding box + ID
             cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
             cv2.putText(frame, f"ID:{obj_id}", (int(x1), int(y1) - 5),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-    # Tulis jumlah ikan unik di frame
     cv2.putText(frame, f"Ikan unik: {len(unique_ids)}", (20, 40),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
 
-    # Simpan & tampilkan hasil
     out.write(frame)
-    cv2.imshow("🎥 Deteksi & Tracking Ikan Mas (Endoscope)", frame)
+    cv2.imshow("🎥 Deteksi Ikan Mas", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         print("🛑 Program dihentikan oleh user.")
@@ -86,7 +78,7 @@ cap.release()
 out.release()
 cv2.destroyAllWindows()
 print(f"✅ Video hasil tersimpan sebagai {output_file}")
-print(f"🐟 Jumlah ikan unik terdeteksi: {len(unique_ids)}")
+print(f"🐟 Total ikan unik: {len(unique_ids)}")
 
 # === 6. Kirim video hasil ke server Flask ===
 server_url = "http://localhost:5000/upload"
